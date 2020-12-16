@@ -1,0 +1,11 @@
+extends layouts/login-layout.pug
+
+block content
+    .loginContainer
+        h1 Login
+        form(action="/login", method="post")
+            input(type="text", name="logUsername", placeholder="Username or Email", required="")
+            input(type="password", name="logPassword", placeholder="Password", required="")
+            input(type="submit", value="Login")
+        span Need An Account?
+            a(href="/register") Register
