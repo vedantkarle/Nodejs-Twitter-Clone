@@ -25,11 +25,18 @@ app.use(
 //Routes
 const loginRoutes = require("./routes/loginRoutes");
 const registerRoutes = require("./routes/registerRoutes");
+const logoutRoutes = require("./routes/logoutRoutes");
+
+//Api Routes
+const postsApiRoutes = require("./routes/api/posts");
 
 app.use("/login", loginRoutes);
 app.use("/register", registerRoutes);
+app.use("/logout", logoutRoutes);
 
-app.get("/", (req, res, next) => {
+app.use("/api/posts", postsApiRoutes);
+
+app.get("/", isLoggedIn, (req, res, next) => {
   let payload = {
     pageTitle: "Home",
     userLoggedIn: req.session.user,

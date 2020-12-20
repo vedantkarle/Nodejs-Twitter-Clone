@@ -1,4 +1,5 @@
 extends layouts/main-layout.pug
 
 block content
-    h1 This is home page
+    +createPostForm(userLoggedIn)
+    .postsContainer
