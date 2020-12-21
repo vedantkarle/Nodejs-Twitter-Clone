@@ -3,7 +3,6 @@ const router = express.Router();
 
 router.route("/").get((req, res, next) => {
   if (req.session) {
-    req.session.user = null;
     req.session.destroy(() => {
       return res.redirect("/login");
     });

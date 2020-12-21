@@ -32,6 +32,10 @@ button{
     color: var(--greyButtonText);
 }
 
+button i,button span{
+    pointer-events: none;
+}
+
 nav{
     display: flex;
     flex-direction: column;
@@ -166,4 +170,26 @@ nav a:hover{
 .postFooter .postButtonContainer button{
     padding: 0 5px;
 
+}
+
+.header a:hover{
+    text-decoration:underline;
+}
+
+.header a,.header span{
+    padding-right:5px;
+}
+
+.postButtonContainer button:hover{
+    background-color:#d4edff;
+    color:var(--blue);
+    border-radius:50%;
+}
+
+.postButtonContainer.red button.active{
+    color: rgb(226,34,94);
+}
+
+.postButtonContainer.red button.active:hover{
+    background-color: rgba(226,34,94,0.1);
 }
