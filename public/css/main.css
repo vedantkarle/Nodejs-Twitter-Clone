@@ -18,6 +18,7 @@
 a,a:hover{
     text-decoration: none;
     color:inherit;
+    cursor: pointer;
 }
 
 h1{
@@ -90,6 +91,17 @@ nav a:hover{
     padding: var(--spacing);
     border-bottom: 10px solid rgb(230, 236, 240);
     flex-shrink: 0;
+}
+
+.modal .postFormContainer{
+    border: none;
+    padding: 0;
+    padding-top: var(--spacing);
+}
+
+.modal .post {
+    padding: 0;
+    padding-bottom: var(--spacing);
 }
 
 .userImageContainer{
@@ -192,4 +204,28 @@ nav a:hover{
 
 .postButtonContainer.red button.active:hover{
     background-color: rgba(226,34,94,0.1);
+}
+
+.postButtonContainer.green button.active{
+    color:rgb(23,191,99);
+}
+
+.postButtonContainer.green button.active:hover{
+    color:rgb(23,191,99);
+    background-color: rgba(23,191,99,0.1);
+}
+
+.postActionContainer{
+    padding-left: 35px;
+    font-size: 13px;
+    color: var(--greyText);
+    margin-bottom: var(--spacing);
+}
+
+.replyFlag{
+    margin-bottom: 5px;
+}
+
+.replyFlag a{
+    color: var(--blue);
 }

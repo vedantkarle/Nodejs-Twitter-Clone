@@ -1,8 +1,10 @@
-$("#postTextArea").keyup((event) => {
+$("#postTextArea,#replyTextArea").keyup((event) => {
   const textbox = $(event.target);
   const value = textbox.val().trim();
 
-  const submitBtn = $("#submitPostButton");
+  const isModal = textbox.parents(".modal").length === 1;
+
+  const submitBtn = isModal ? $("#submitReplyButton") : $("#submitPostButton");
 
   if (submitBtn.length === 0) {
     return alert("No Submit Button Found");
@@ -16,20 +18,49 @@ $("#postTextArea").keyup((event) => {
   submitBtn.prop("disabled", false);
 });
 
-$("#submitPostButton").click((event) => {
+$("#submitPostButton,#submitReplyButton").click((event) => {
   const button = $(event.target);
-  const textbox = $("#postTextArea");
+
+  const isModal = button.parents(".modal").length === 1;
+
+  const textbox = isModal ? $("#replyTextArea") : $("#postTextArea");
 
   const data = {
     content: textbox.val(),
   };
 
+  if (isModal) {
+    const id = button.data().id;
+    data.replyTo = id;
+  }
+
   $.post("/api/posts", data, (postData) => {
-    const html = createPostHtml(postData);
-    $(".postsContainer").prepend(html);
-    textbox.val("");
-    button.prop("disabled", true);
+    if (postData.replyTo) {
+      location.reload();
+    } else {
+      const html = createPostHtml(postData);
+      $(".postsContainer").prepend(html);
+      textbox.val("");
+      button.prop("disabled", true);
+    }
   });
+});
+
+//events provided by bootstrap
+
+$("#replyModal").on("show.bs.modal", (event) => {
+  const button = $(event.relatedTarget);
+  const postId = getPostIdFromElement(button);
+
+  $("#submitReplyButton").data("id", postId);
+
+  $.get(`/api/posts/${postId}`, (result) => {
+    outputSinglePost(result.postData, $("#originalPostContainer"));
+  });
+});
+
+$("#replyModal").on("hidden.bs.modal", (event) => {
+  $("#originalPostContainer").html("");
 });
 
 $(document).on("click", ".likeButton", (event) => {
@@ -61,9 +92,24 @@ $(document).on("click", ".retweetButton", (event) => {
     url: `/api/posts/${postId}/retweet`,
     type: "POST",
     success: (postData) => {
-      console.log(postData);
+      button.find("span").text(postData.retweetUsers.length || "");
+
+      if (postData.retweetUsers.includes(userLoggedIn._id)) {
+        button.addClass("active");
+      } else {
+        button.removeClass("active");
+      }
     },
   });
+});
+
+$(document).on("click", ".post", (event) => {
+  const element = $(event.target);
+  const postId = getPostIdFromElement(element);
+
+  if (postId !== undefined && !element.is("button")) {
+    window.location.href = "/posts/" + postId;
+  }
 });
 
 function getPostIdFromElement(element) {
@@ -79,6 +125,12 @@ function getPostIdFromElement(element) {
 }
 
 function createPostHtml(postData) {
+  if (postData === null) return alert("No post Object");
+
+  const isRetweet = postData.retweetData !== undefined;
+  const retweetedBy = isRetweet ? postData.postedBy.username : null;
+  postData = isRetweet ? postData.retweetData : postData;
+
   const postedBy = postData.postedBy;
   const displayName = postedBy.firstName + " " + postedBy.lastName;
   const timestamp = timeDifference(new Date(), new Date(postData.createdAt));
@@ -87,7 +139,31 @@ function createPostHtml(postData) {
     ? "active"
     : "";
 
+  const retweetButtonActiveClass = postData.retweetUsers.includes(
+    userLoggedIn._id
+  )
+    ? "active"
+    : "";
+
+  let retweetText = "";
+
+  if (isRetweet) {
+    retweetText = `<span><i class="fas fa-retweet"></i>Retweeted By <a href="/profile/${retweetedBy}">@${retweetedBy}</a></span>`;
+  }
+
+  let replyFlag = "";
+
+  if (postData.replyTo) {
+    if (!postData.replyTo._id) return alert("Reply to is not populated");
+
+    const replyToUsername = postData.replyTo.postedBy.username;
+    replyFlag = `<div class="replyFlag">Replying To <a href="/profile/${replyToUsername}">${replyToUsername}</a></div>`;
+  }
+
   return `<div class="post" data-id='${postData._id}'>
+    <div class="postActionContainer">
+      ${retweetText}
+    </div>
     <div class="mainContentContainer">
       <div class="userImageContainer">
         <img src="${postedBy.profilePic}" />
@@ -100,15 +176,19 @@ function createPostHtml(postData) {
           <span class="username">@${postedBy.username}</span>
           <span class="date">${timestamp}</span>
         </div>
+        ${replyFlag}
         <div class="postBody">
           <span>${postData.content}</span>
         </div>
         <div class="postFooter">
           <div class="postButtonContainer">
-            <button><i class="far fa-comment"></i></button>
+            <button data-toggle="modal" data-target="#replyModal"><i class="far fa-comment"></i></button>
           </div>
           <div class="postButtonContainer green">
-            <button class="retweetButton"><i class="fas fa-retweet"></i></button>
+            <button class="retweetButton ${retweetButtonActiveClass}">
+            <i class="fas fa-retweet"></i>
+            <span>${postData.retweetUsers.length || ""}</span>
+            </button>
           </div>
           <div class="postButtonContainer red">
             <button class="likeButton ${likedButtonActiveClass}">
@@ -145,4 +225,40 @@ function timeDifference(current, previous) {
   } else {
     return Math.round(elapsed / msPerYear) + " years ago";
   }
+}
+
+function outputPosts(results, container) {
+  container.html("");
+
+  results.forEach((result) => {
+    const html = createPostHtml(result);
+    container.append(html);
+  });
+
+  if (results.length === 0) {
+    container.append("<span>No Posts Yet!</span>");
+  }
+}
+
+function outputSinglePost(result, container) {
+  container.html("");
+  const html = createPostHtml(result);
+  container.append(html);
+}
+
+function outputSinglePostWithReplies(result, container) {
+  container.html("");
+
+  if (result.replyTo !== undefined && result.replyTo._id !== undefined) {
+    const html = createPostHtml(result.replyTo);
+    container.append(html);
+  }
+
+  const mainPostHtml = createPostHtml(result.postData);
+  container.append(mainPostHtml);
+
+  result.replies.forEach((reply) => {
+    const html = createPostHtml(reply);
+    container.append(html);
+  });
 }

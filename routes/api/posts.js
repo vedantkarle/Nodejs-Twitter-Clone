@@ -6,13 +6,19 @@ const Post = require("../../models/Post");
 router
   .route("/")
   .get(async (req, res, next) => {
-    const posts = await Post.find({})
+    let posts = await Post.find({})
       .populate("postedBy")
+      .populate("retweetData")
+      .populate("replyTo")
       .sort({ createdAt: -1 })
       .catch((e) => {
         console.log(e);
         res.sendStatus(400);
       });
+
+    posts = await User.populate(posts, { path: "replyTo.postedBy" });
+
+    await User.populate(posts, { path: "retweetData.postedBy" });
 
     return res.status(200).send(posts);
   })
@@ -22,18 +28,57 @@ router
       return res.sendStatus(400);
     }
 
-    const postData = {
+    let postData = {
       content: req.body.content,
       postedBy: req.session.user,
     };
 
-    const post = await Post.create(postData).catch((e) => {
+    if (req.body.replyTo) {
+      postData.replyTo = req.body.replyTo;
+    }
+
+    let post = await Post.create(postData).catch((e) => {
       console.log(e);
       res.sendStatus(400);
     });
 
+    post = await User.populate(post, { path: "postedBy" });
+
     res.status(201).send(post);
   });
+
+router.get("/:id", async (req, res, next) => {
+  let postData = await Post.findById(req.params.id)
+    .populate("postedBy")
+    .populate("retweetData")
+    .populate("replyTo")
+    .catch((e) => {
+      console.log(e);
+      res.sendStatus(400);
+    });
+
+  postData = await User.populate(postData, {
+    path: "replyTo.postedBy",
+  });
+
+  const result = {
+    postData: postData,
+  };
+
+  if (postData.replyTo !== undefined) {
+    result.replyTo = postData.replyTo;
+  }
+
+  result.replies = await Post.find({ replyTo: req.params.id })
+    .populate("replyTo")
+    .populate("postedBy");
+
+  result.replies = await User.populate(result.replies, {
+    path: "replyTo.postedBy",
+  });
+
+  return res.status(200).send(result);
+});
 
 router.put("/:id/like", async (req, res, next) => {
   const postId = req.params.id;
