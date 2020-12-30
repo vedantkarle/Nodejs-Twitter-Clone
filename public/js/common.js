@@ -63,6 +63,25 @@ $("#replyModal").on("hidden.bs.modal", (event) => {
   $("#originalPostContainer").html("");
 });
 
+$("#deletePostModal").on("show.bs.modal", (event) => {
+  const button = $(event.relatedTarget);
+  const postId = getPostIdFromElement(button);
+
+  $("#deletePostButton").data("id", postId);
+});
+
+$("#deletePostButton").click((e) => {
+  const postId = $(e.target).data("id");
+
+  $.ajax({
+    url: `/api/posts/${postId}`,
+    type: "DELETE",
+    success: () => {
+      location.reload();
+    },
+  });
+});
+
 $(document).on("click", ".likeButton", (event) => {
   const button = $(event.target);
   const postId = getPostIdFromElement(button);
@@ -110,6 +129,37 @@ $(document).on("click", ".post", (event) => {
   if (postId !== undefined && !element.is("button")) {
     window.location.href = "/posts/" + postId;
   }
+});
+
+$(document).on("click", ".followButton", (event) => {
+  const button = $(event.target);
+  const userId = button.data().id;
+
+  $.ajax({
+    url: `/api/users/${userId}/follow`,
+    type: "PUT",
+    success: (data, status, xhr) => {
+      if (xhr.status === 404) {
+        return alert("User not found!");
+      }
+      let difference = 1;
+      if (data.following && data.following.includes(userId)) {
+        button.addClass("following");
+        button.text("Following");
+      } else {
+        button.removeClass("following");
+        button.text("Follow");
+        difference = -1;
+      }
+
+      const followersLabel = $("#followersValue");
+
+      if (followersLabel.length !== 0) {
+        const followersText = +followersLabel.text();
+        followersLabel.text(followersText + difference);
+      }
+    },
+  });
 });
 
 function getPostIdFromElement(element) {
@@ -160,6 +210,12 @@ function createPostHtml(postData) {
     replyFlag = `<div class="replyFlag">Replying To <a href="/profile/${replyToUsername}">${replyToUsername}</a></div>`;
   }
 
+  let button = "";
+
+  if (postData.postedBy._id === userLoggedIn._id) {
+    button = `<button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class="fas fa-times"></i></button>`;
+  }
+
   return `<div class="post" data-id='${postData._id}'>
     <div class="postActionContainer">
       ${retweetText}
@@ -175,6 +231,7 @@ function createPostHtml(postData) {
           </a>
           <span class="username">@${postedBy.username}</span>
           <span class="date">${timestamp}</span>
+          ${button}
         </div>
         ${replyFlag}
         <div class="postBody">

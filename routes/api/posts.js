@@ -6,8 +6,17 @@ const Post = require("../../models/Post");
 router
   .route("/")
   .get(async (req, res, next) => {
-    let posts = await Post.find({})
-      .populate("postedBy")
+    let posts;
+
+    const searchObj = req.query;
+
+    if (searchObj.isReply !== undefined) {
+      const isReply = searchObj.isReply;
+      searchObj.replyTo = { $exists: isReply };
+      delete searchObj.isReply;
+    }
+
+    posts = await Post.find(searchObj)
       .populate("retweetData")
       .populate("replyTo")
       .sort({ createdAt: -1 })
@@ -15,6 +24,8 @@ router
         console.log(e);
         res.sendStatus(400);
       });
+
+    posts = await User.populate(posts, { path: "postedBy" });
 
     posts = await User.populate(posts, { path: "replyTo.postedBy" });
 
@@ -78,6 +89,14 @@ router.get("/:id", async (req, res, next) => {
   });
 
   return res.status(200).send(result);
+});
+
+router.delete("/:id", async (req, res, next) => {
+  await Post.findByIdAndDelete(req.params.id).catch((e) => {
+    console.log(e);
+    res.sendStatus(400);
+  });
+  res.sendStatus(202);
 });
 
 router.put("/:id/like", async (req, res, next) => {
