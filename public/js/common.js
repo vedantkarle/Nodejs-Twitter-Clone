@@ -1,3 +1,6 @@
+//Globals
+let cropper;
+
 $("#postTextArea,#replyTextArea").keyup((event) => {
   const textbox = $(event.target);
   const value = textbox.val().trim();
@@ -79,6 +82,88 @@ $("#deletePostButton").click((e) => {
     success: () => {
       location.reload();
     },
+  });
+});
+
+$("#filePhoto").change(function () {
+  if (this.files && this.files[0]) {
+    const selectedImageSrc = URL.createObjectURL(this.files[0]);
+
+    document.getElementById("imagePreview").src = selectedImageSrc;
+
+    if (cropper !== undefined) {
+      cropper.destroy();
+    }
+
+    cropper = new Cropper(document.getElementById("imagePreview"), {
+      aspectRatio: 1 / 1,
+      background: false,
+    });
+  }
+});
+
+$("#imageUploadButton").click(() => {
+  let canvas = cropper.getCroppedCanvas();
+
+  if (canvas === null) {
+    return alert("Could Not Upload Image,Make Sure Its a image file!");
+  }
+
+  canvas.toBlob((blob) => {
+    let formData = new FormData();
+    formData.append("croppedImage", blob);
+
+    $.ajax({
+      url: "/api/users/profilePicture",
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: () => {
+        location.reload();
+      },
+    });
+  });
+});
+
+$("#coverPhoto").change(function () {
+  if (this.files && this.files[0]) {
+    const selectedImageSrc = URL.createObjectURL(this.files[0]);
+
+    document.getElementById("coverImagePreview").src = selectedImageSrc;
+
+    if (cropper !== undefined) {
+      cropper.destroy();
+    }
+
+    cropper = new Cropper(document.getElementById("coverImagePreview"), {
+      aspectRatio: 16 / 9,
+      background: false,
+    });
+  }
+});
+
+$("#coverPhotoButton").click(() => {
+  let canvas = cropper.getCroppedCanvas();
+
+  if (canvas === null) {
+    return alert("Could Not Upload Image,Make Sure Its a image file!");
+  }
+
+  canvas.toBlob((blob) => {
+    let formData = new FormData();
+    formData.append("croppedImage", blob);
+
+    $.ajax({
+      url: "/api/users/coverPhoto",
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: () => {
+        location.reload();
+      },
+    });
   });
 });
 

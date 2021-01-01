@@ -7,15 +7,23 @@ block content
         script.
             const profileUserId= '!{profileUser._id}';
             const selectedTab= '!{selectedTab}';
-
-        - followersCount = profileUser.followers.length
-        - followingCount = profileUser.following.length
         
         .profileHeaderContainer
-            .coverPhotoContainer
+            .coverPhotoSection
+                .coverPhotoContainer
+                    img(src=profileUser.coverPhoto, alt=profileUser.username)
+
+                    -if(profileUser._id===userLoggedIn._id)
+                        button.coverPhotoButton(data-toggle="modal" data-target="#coverPhotoModal")
+                            i.fas.fa-camera
 
                 .userImageContainer
                     img(src=profileUser.profilePic, alt=profileUser.username)
+
+
+                    -if(profileUser._id===userLoggedIn._id)
+                        button.profilePictureButton(data-toggle="modal" data-target="#imageUploadModal")
+                            i.fas.fa-camera
             .profileButtonsContainer
                 if profileUser._id !== userLoggedIn._id
                     a.profileButton(href=`/messages/${profileUser._id}`)
@@ -33,10 +41,10 @@ block content
 
                 .followersContainer
                     a(href=`/profile/${profileUser.username}/following`)
-                        span.value #{followingCount}
+                        span.value #{profileUser.following.length}
                         span Following
                     a(href=`/profile/${profileUser.username}/followers`)
-                        span#followersValue.value #{followersCount}
+                        span#followersValue.value #{profileUser.followers.length}
                         span Followers
         .tabsContainer
             +createTab("Posts",`/profile/${profileUser.username}`, selectedTab != 'replies')
@@ -45,6 +53,8 @@ block content
         .postsContainer
 
         +createPostModals(userLoggedIn)
+        +createImageUploadModal()
+        +createCoverPhotoModal()
     
 block scripts
     script(src="/js/profile.js")

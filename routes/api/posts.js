@@ -16,6 +16,27 @@ router
       delete searchObj.isReply;
     }
 
+    if (searchObj.followingOnly !== undefined) {
+      const followingOnly = searchObj.followingOnly;
+
+      if (followingOnly) {
+        const objectIds = [];
+
+        if (!req.session.user.following) {
+          req.session.user.followig = [];
+        }
+
+        req.session.user.following.forEach((user) => {
+          objectIds.push(user);
+        });
+
+        objectIds.push(req.session.user._id);
+
+        searchObj.postedBy = { $in: objectIds };
+      }
+      delete searchObj.followingOnly;
+    }
+
     posts = await Post.find(searchObj)
       .populate("retweetData")
       .populate("replyTo")
