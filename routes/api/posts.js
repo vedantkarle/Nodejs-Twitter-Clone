@@ -16,6 +16,11 @@ router
       delete searchObj.isReply;
     }
 
+    if (searchObj.search !== undefined) {
+      searchObj.content = { $regex: searchObj.search, $options: "i" }; //case insensitive
+      delete searchObj.search;
+    }
+
     if (searchObj.followingOnly !== undefined) {
       const followingOnly = searchObj.followingOnly;
 
@@ -118,6 +123,25 @@ router.delete("/:id", async (req, res, next) => {
     res.sendStatus(400);
   });
   res.sendStatus(202);
+});
+
+router.put("/:id", async (req, res, next) => {
+  if (req.body.pinned !== undefined) {
+    await Post.updateMany(
+      { postedBy: req.session.user._id },
+      { pinned: false }
+    ).catch((e) => {
+      console.log(e);
+      res.sendStatus(400);
+    });
+  }
+
+  await Post.findByIdAndUpdate(req.params.id, req.body).catch((e) => {
+    console.log(e);
+    res.sendStatus(400);
+  });
+
+  res.sendStatus(204);
 });
 
 router.put("/:id/like", async (req, res, next) => {

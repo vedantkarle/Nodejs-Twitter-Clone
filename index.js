@@ -27,16 +27,24 @@ const loginRoutes = require("./routes/loginRoutes");
 const registerRoutes = require("./routes/registerRoutes");
 const logoutRoutes = require("./routes/logoutRoutes");
 const postRoutes = require("./routes/postRoutes");
+const profileRoutes = require("./routes/profileRoutes");
+const uploadsRoutes = require("./routes/uploadRoutes");
+const searchRoutes = require("./routes/searchRoutes");
 
 //Api Routes
 const postsApiRoutes = require("./routes/api/posts");
+const usersApiRoutes = require("./routes/api/users");
 
 app.use("/login", loginRoutes);
 app.use("/register", registerRoutes);
 app.use("/logout", logoutRoutes);
 app.use("/posts", isLoggedIn, postRoutes);
+app.use("/profile", isLoggedIn, profileRoutes);
+app.use("/uploads", uploadsRoutes);
+app.use("/search", searchRoutes);
 
 app.use("/api/posts", postsApiRoutes);
+app.use("/api/users", usersApiRoutes);
 
 app.get("/", isLoggedIn, (req, res, next) => {
   let payload = {
