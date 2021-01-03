@@ -434,3 +434,122 @@ nav a:hover{
     outline: none;
     color: var(--greyText);
 }
+
+.chatPageContainer{
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.chatTitleBar{
+    border-bottom: 1px solid var(--lightGrey);
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+    padding: 10px;
+}
+
+.chatTitleBar label{
+    margin: 0 10px 0 0;
+}
+
+.chatTitleBar #userSearchTextBox{
+    border: none;
+    outline: none;
+    flex: 1;
+    font-weight: 200;
+    min-width: 350px;
+}
+
+#createChatButton{
+    border: none;
+    outline: none;
+    background-color: var(--blue);
+    color: #fff;
+    padding: 7px 20px;
+    margin:10px auto;
+    border-radius: 40px;
+}
+
+#createChatButton:disabled{
+    background-color: var(--lightGrey);
+    color: var(--greyText);
+}
+
+.selectedUser{
+    font-weight: 300;
+    background-color: #CBE5FE;
+    color: #0084FF;
+    padding: 5px;
+    border-radius: 3px;
+    margin: 5px 5px 0 0;
+    display: inline-block;
+}
+
+.deleteSelectedUser{
+    margin-left: 3px;
+    font-size: 14px;
+}
+
+.resultListItem{
+    padding: 7px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--lightGrey);
+}
+
+.resultListItem:hover{
+    background-color: #F2F2F2;
+}
+
+.resultsDetailContainer{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.resultsDetailContainer .heading{
+    font-weight: 500;
+}
+
+.resultsDetailContainer .subText{
+    color: var(--greyText);
+    font-size: 14px;
+}
+
+.resultListItem img{
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+}
+
+.resultsImageContainer{
+    height: 40px;
+    width: 40px;
+    position: relative;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+.groupChatImage img{
+    height: 65%;
+    width: 65%;
+    position: absolute;
+    bottom: 0;
+    margin: 0;
+    border: 3px solid #fff;
+}
+
+.groupChatImage img:first-of-type{
+    top: 0;
+    right: 0;
+}
+
+.ellipsis{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

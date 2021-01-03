@@ -55,7 +55,7 @@ router
 
     posts = await User.populate(posts, { path: "replyTo.postedBy" });
 
-    await User.populate(posts, { path: "retweetData.postedBy" });
+    posts = await User.populate(posts, { path: "retweetData.postedBy" });
 
     return res.status(200).send(posts);
   })
@@ -118,10 +118,11 @@ router.get("/:id", async (req, res, next) => {
 });
 
 router.delete("/:id", async (req, res, next) => {
-  await Post.findByIdAndDelete(req.params.id).catch((e) => {
+  const post = await Post.findByIdAndDelete(req.params.id).catch((e) => {
     console.log(e);
     res.sendStatus(400);
   });
+
   res.sendStatus(202);
 });
 

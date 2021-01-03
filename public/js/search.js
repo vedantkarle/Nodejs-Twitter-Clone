@@ -1,5 +1,3 @@
-let timer;
-
 $("#searchBox").keydown((e) => {
   clearTimeout(timer);
   let textbox = $(e.target);
